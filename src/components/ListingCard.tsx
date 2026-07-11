@@ -13,14 +13,32 @@ export interface ListingCardData {
   created_at: string;
 }
 
-export function ListingCard({ listing }: { listing: ListingCardData }) {
+export function ListingCard({
+  listing,
+  onDelete,
+}: {
+  listing: ListingCardData;
+  onDelete?: () => void;
+}) {
   const cover = listing.photos?.[0];
   return (
     <Link
       to="/listing/$id"
       params={{ id: listing.id }}
-      className="group overflow-hidden rounded-xl border bg-card shadow-[var(--shadow-card)] transition hover:shadow-[var(--shadow-elevated)]"
+      className="group relative overflow-hidden rounded-xl border bg-card shadow-[var(--shadow-card)] transition hover:shadow-[var(--shadow-elevated)]"
     >
+       {onDelete && (
+    <button
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onDelete();
+      }}
+      className="absolute right-2 top-2 z-10 rounded bg-red-500 px-2 py-1 text-xs text-white"
+    >
+      Apagar
+    </button>
+  )}
       <div className="aspect-[4/3] overflow-hidden bg-muted">
         {cover ? (
           <img
