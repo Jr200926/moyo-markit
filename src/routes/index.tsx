@@ -24,23 +24,6 @@ export const Route = createFileRoute("/")({
 function Home_() {
   const [q, setQ] = useState("");
   const navigate = useNavigate();
-  const handleDelete = async (id: string) => {
-  const confirmDelete = confirm("Tens a certeza que queres apagar?");
-  if (!confirmDelete) return;
-
-  const { error } = await supabase
-    .from("listings")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    console.error(error);
-    alert("Erro ao apagar");
-  } else {
-    alert("Apagado com sucesso");
-    window.location.reload();
-  }
-};
 
   const { data: listings, isLoading } = useQuery({
     queryKey: ["recent-listings"],
@@ -116,13 +99,9 @@ function Home_() {
           </div>
         ) : listings && listings.length > 0 ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-           {listings.map((l) => (
-  <ListingCard
-    key={l.id}
-    listing={l}
-    onDelete={() => handleDelete(l.id)}
-  />
-))}
+            {listings.map((l) => (
+              <ListingCard key={l.id} listing={l} />
+            ))}
           </div>
         ) : (
           <div className="rounded-xl border border-dashed p-10 text-center">
