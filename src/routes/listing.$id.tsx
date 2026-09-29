@@ -1,8 +1,9 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { MapPin, Calendar, MessageCircle, User as UserIcon } from "lucide-react";
+import { MapPin, Calendar, MessageCircle, Pencil, User as UserIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { buildWhatsAppUrl, categoryLabel, formatKwanza } from "@/lib/format";
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/listing/$id")({
 
 function ListingDetailPage() {
   const { id } = Route.useParams();
+  const { user } = useAuth();
   const [activePhoto, setActivePhoto] = useState(0);
 
   const { data: listing, isLoading } = useQuery({
@@ -134,6 +136,14 @@ function ListingDetailPage() {
         </div>
 
         <aside className="space-y-3">
+          {user?.id === listing.user_id && (
+            <Button asChild variant="outline" size="lg" className="w-full">
+              <Link to="/listing/$id/edit" params={{ id: listing.id }}>
+                <Pencil className="size-4" />
+                Editar anúncio
+              </Link>
+            </Button>
+          )}
           <div className="rounded-xl border bg-card p-4 shadow-[var(--shadow-card)]">
             <Link
               to="/profile/$id"

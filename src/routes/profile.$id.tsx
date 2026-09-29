@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { User as UserIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { ListingCard, type ListingCardData } from "@/components/ListingCard";
 
 export const Route = createFileRoute("/profile/$id")({
@@ -11,6 +12,9 @@ export const Route = createFileRoute("/profile/$id")({
 
 function ProfilePage() {
   const { id } = Route.useParams();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const isOwnProfile = user?.id === id;
 
   const { data: profile } = useQuery({
     queryKey: ["profile", id],
@@ -74,7 +78,18 @@ function ProfilePage() {
         ) : listings && listings.length > 0 ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {listings.map((l) => (
-              <ListingCard key={l.id} listing={l} />
+              <ListingCard
+                key={l.id}
+                listing={l}
+                showOwnerActions={isOwnProfile}
+                onDeleted={() =>
+                  queryClient.setQueryData(
+                    ["profile-listings", id],
+                    (cur: ListingCardData[] | undefined) =>
+                      cur?.filter((item) => item.id !== l.id),
+                  )
+                }
+              />
             ))}
           </div>
         ) : (

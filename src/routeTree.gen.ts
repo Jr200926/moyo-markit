@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileIdRouteImport } from './routes/profile.$id'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
 import { Route as AuthenticatedNewRouteImport } from './routes/_authenticated/new'
+import { Route as AuthenticatedListingIdEditRouteImport } from './routes/_authenticated/listing.$id.edit'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -51,6 +52,12 @@ const AuthenticatedNewRoute = AuthenticatedNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedListingIdEditRoute =
+  AuthenticatedListingIdEditRouteImport.update({
+    id: '/listing/$id/edit',
+    path: '/listing/$id/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/new': typeof AuthenticatedNewRoute
   '/listing/$id': typeof ListingIdRoute
   '/profile/$id': typeof ProfileIdRoute
+  '/listing/$id/edit': typeof AuthenticatedListingIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -67,6 +75,7 @@ export interface FileRoutesByTo {
   '/new': typeof AuthenticatedNewRoute
   '/listing/$id': typeof ListingIdRoute
   '/profile/$id': typeof ProfileIdRoute
+  '/listing/$id/edit': typeof AuthenticatedListingIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,13 +86,27 @@ export interface FileRoutesById {
   '/_authenticated/new': typeof AuthenticatedNewRoute
   '/listing/$id': typeof ListingIdRoute
   '/profile/$id': typeof ProfileIdRoute
+  '/_authenticated/listing/$id/edit': typeof AuthenticatedListingIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/search' | '/new' | '/listing/$id' | '/profile/$id'
+    | '/'
+    | '/auth'
+    | '/search'
+    | '/new'
+    | '/listing/$id'
+    | '/profile/$id'
+    | '/listing/$id/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/search' | '/new' | '/listing/$id' | '/profile/$id'
+  to:
+    | '/'
+    | '/auth'
+    | '/search'
+    | '/new'
+    | '/listing/$id'
+    | '/profile/$id'
+    | '/listing/$id/edit'
   id:
     | '__root__'
     | '/'
@@ -93,6 +116,7 @@ export interface FileRouteTypes {
     | '/_authenticated/new'
     | '/listing/$id'
     | '/profile/$id'
+    | '/_authenticated/listing/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -155,15 +179,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/listing/$id/edit': {
+      id: '/_authenticated/listing/$id/edit'
+      path: '/listing/$id/edit'
+      fullPath: '/listing/$id/edit'
+      preLoaderRoute: typeof AuthenticatedListingIdEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedNewRoute: typeof AuthenticatedNewRoute
+  AuthenticatedListingIdEditRoute: typeof AuthenticatedListingIdEditRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNewRoute: AuthenticatedNewRoute,
+  AuthenticatedListingIdEditRoute: AuthenticatedListingIdEditRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
