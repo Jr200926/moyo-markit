@@ -1,10 +1,12 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { LogOut, Plus, User as UserIcon } from "lucide-react";
+import { LogOut, Plus, ShieldAlert, User as UserIcon } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useOwnProfile } from "@/lib/useOwnProfile";
 import { Button } from "@/components/ui/button";
 
 export function Header() {
   const { user, signOut } = useAuth();
+  const { data: ownProfile } = useOwnProfile();
   const navigate = useNavigate();
 
   return (
@@ -20,6 +22,14 @@ export function Header() {
         <nav className="flex items-center gap-2">
           {user ? (
             <>
+              {ownProfile?.is_admin && (
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/admin">
+                    <ShieldAlert className="size-4" />
+                    <span className="hidden sm:inline">Admin</span>
+                  </Link>
+                </Button>
+              )}
               <Button asChild variant="default" size="sm">
                 <Link to="/new">
                   <Plus className="size-4" /> Publicar
