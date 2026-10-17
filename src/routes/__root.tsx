@@ -76,13 +76,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Moyo Mark — Imóveis e Serviços em Luanda" },
+      { title: "Moyo Markit — Imóveis e Serviços em Luanda" },
       {
         name: "description",
         content:
           "Compre, venda e encontre serviços em Luanda. Anuncie imóveis e contacte vendedores diretamente pelo WhatsApp.",
       },
-      { property: "og:title", content: "Moyo Mark — Imóveis e Serviços em Luanda" },
+      { property: "og:title", content: "Moyo Markit — Imóveis e Serviços em Luanda" },
       {
         property: "og:description",
         content: "Marketplace simples de imóveis e serviços em Angola.",
@@ -90,7 +90,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -123,7 +127,7 @@ function RootComponent() {
             <Outlet />
           </main>
           <footer className="border-t py-6 pb-24 text-center text-xs text-muted-foreground md:pb-6">
-            Moyo Mark · Luanda, Angola
+            Moyo Markit · Luanda, Angola
           </footer>
           <BottomNav />
         </div>

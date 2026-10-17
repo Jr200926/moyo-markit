@@ -28,7 +28,7 @@ export const Route = createFileRoute("/search")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Procurar anúncios — Moyo Mark" },
+      { title: "Procurar anúncios — Moyo Markit" },
       { name: "description", content: "Procure imóveis e serviços em Luanda." },
     ],
   }),

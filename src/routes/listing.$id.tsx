@@ -72,7 +72,7 @@ function ListingDetailPage() {
   const photos = listing.photos.length > 0 ? listing.photos : [];
   const waUrl = buildWhatsAppUrl(
     listing.phone,
-    `Olá! Vi o seu anúncio na Moyo Mark: "${listing.title}". Ainda está disponível?`,
+    `Olá! Vi o seu anúncio na Moyo Markit: "${listing.title}". Ainda está disponível?`,
   );
 
   return (

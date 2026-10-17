@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/listing/$id/edit")({
-  head: () => ({ meta: [{ title: "Editar anúncio — Moyo Mark" }] }),
+  head: () => ({ meta: [{ title: "Editar anúncio — Moyo Markit" }] }),
   component: EditListing,
 });
 

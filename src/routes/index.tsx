@@ -10,7 +10,7 @@ import { ListingCard, type ListingCardData } from "@/components/ListingCard";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Moyo Mark — Imóveis e Serviços em Luanda" },
+      { title: "Moyo Markit — Imóveis e Serviços em Luanda" },
       {
         name: "description",
         content:

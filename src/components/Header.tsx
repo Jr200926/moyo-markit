@@ -13,10 +13,11 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground font-bold">
-            M
-          </div>
-          <span className="text-lg font-semibold tracking-tight">Moyo Mark</span>
+          <img src="/logo-icon.png" alt="Moyo Markit" className="h-9 w-9" />
+          <span className="text-lg font-bold tracking-tight">
+            <span className="text-[#0a5c2b] dark:text-[#7be04a]">Moyo</span>
+            <span className="text-[#3bb61d]">Markit</span>
+          </span>
         </Link>
 
         <nav className="flex items-center gap-2">

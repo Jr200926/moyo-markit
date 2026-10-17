@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/new")({
-  head: () => ({ meta: [{ title: "Publicar anúncio — Moyo Mark" }] }),
+  head: () => ({ meta: [{ title: "Publicar anúncio — Moyo Markit" }] }),
   component: NewListing,
 });
 

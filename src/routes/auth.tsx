@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
-    meta: [{ title: "Entrar — Moyo Mark" }],
+    meta: [{ title: "Entrar — Moyo Markit" }],
   }),
   component: AuthPage,
 });
@@ -43,10 +43,10 @@ function AuthPage() {
     <div className="mx-auto max-w-md px-4 py-10">
       <div className="rounded-2xl border bg-card p-6 shadow-[var(--shadow-card)]">
         <div className="mb-6 text-center">
-          <Link to="/" className="inline-grid size-12 place-items-center rounded-xl bg-primary text-primary-foreground text-xl font-bold">
-            M
+          <Link to="/" className="inline-block">
+            <img src="/logo-icon.png" alt="Moyo Markit" className="size-16" />
           </Link>
-          <h1 className="mt-3 text-2xl font-bold">Bem-vindo à Moyo Mark</h1>
+          <h1 className="mt-3 text-2xl font-bold">Bem-vindo à Moyo Markit</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Entre ou crie conta para publicar anúncios.
           </p>

@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { ListingCard, type ListingCardData } from "@/components/ListingCard";
 
 export const Route = createFileRoute("/profile/$id")({
-  head: () => ({ meta: [{ title: "Perfil — Moyo Mark" }] }),
+  head: () => ({ meta: [{ title: "Perfil — Moyo Markit" }] }),
   component: ProfilePage,
 });
 
@@ -58,7 +58,7 @@ function ProfilePage() {
         <div>
           <h1 className="text-xl font-bold">{profile?.full_name || "Utilizador"}</h1>
           {memberSince && (
-            <p className="text-sm text-muted-foreground">Na Moyo Mark desde {memberSince}</p>
+            <p className="text-sm text-muted-foreground">Na Moyo Markit desde {memberSince}</p>
           )}
           <p className="mt-1 text-sm text-muted-foreground">
             {listings?.length ?? 0} anúncio{(listings?.length ?? 0) === 1 ? "" : "s"} publicado

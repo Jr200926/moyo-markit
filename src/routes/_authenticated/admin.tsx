@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  head: () => ({ meta: [{ title: "Administração — Moyo Mark" }] }),
+  head: () => ({ meta: [{ title: "Administração — Moyo Markit" }] }),
   component: AdminPage,
 });
 
@@ -108,7 +108,7 @@ function AdminPage() {
         <ShieldAlert className="mx-auto mb-3 size-10 text-muted-foreground" />
         <h1 className="text-lg font-semibold">Sem permissão</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Esta área é reservada aos administradores do Moyo Mark.
+          Esta área é reservada aos administradores do Moyo Markit.
         </p>
       </div>
     );
