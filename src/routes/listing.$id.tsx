@@ -26,7 +26,7 @@ export const Route = createFileRoute("/listing/$id")({
   component: ListingDetailPage,
   errorComponent: ({ error }) => (
     <div className="p-10 text-center text-muted-foreground">
-      Não foi possível carregar o anúncio. {error.message}
+      Não foi possível carregar o anúncio. {error instanceof Error ? error.message : ""}
     </div>
   ),
   notFoundComponent: () => (
