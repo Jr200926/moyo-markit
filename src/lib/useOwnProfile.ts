@@ -10,11 +10,11 @@ export function useOwnProfile() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("is_admin,is_banned")
+        .select("is_admin,is_banned,avatar_url")
         .eq("id", user!.id)
         .maybeSingle();
       if (error) throw error;
-      return data as { is_admin: boolean; is_banned: boolean } | null;
+      return data as { is_admin: boolean; is_banned: boolean; avatar_url: string | null } | null;
     },
   });
 }

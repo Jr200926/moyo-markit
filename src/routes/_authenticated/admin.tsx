@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { ShieldAlert, Trash2, Ban } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOwnProfile } from "@/lib/useOwnProfile";
+import { removeFromStorage } from "@/lib/media";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatKwanza, categoryLabel } from "@/lib/format";
@@ -40,6 +41,8 @@ interface ListingRow {
   title: string;
   category: "imoveis" | "servicos";
   price: number | null;
+  photos: string[];
+  video_url: string | null;
   created_at: string;
 }
 
@@ -67,7 +70,7 @@ function AdminPage() {
     queryFn: async (): Promise<ListingRow[]> => {
       const { data, error } = await supabase
         .from("listings")
-        .select("id,user_id,title,category,price,created_at")
+        .select("id,user_id,title,category,price,photos,video_url,created_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -94,6 +97,8 @@ function AdminPage() {
       toast.error(error.message);
       return;
     }
+    await removeFromStorage("listing-photos", l.photos ?? []);
+    await removeFromStorage("listing-videos", [l.video_url]);
     toast.success("Anúncio apagado.");
     queryClient.invalidateQueries({ queryKey: ["admin-listings"] });
   }

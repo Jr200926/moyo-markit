@@ -1,9 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { MapPin, Calendar, MessageCircle, Pencil, User as UserIcon } from "lucide-react";
+import { MapPin, Calendar, MessageCircle, Pencil, Download, User as UserIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { downloadHref, fileExtension, slugify } from "@/lib/media";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { buildWhatsAppUrl, categoryLabel, formatKwanza } from "@/lib/format";
@@ -18,6 +19,7 @@ interface ListingDetail {
   location: string;
   phone: string;
   photos: string[];
+  video_url: string | null;
   created_at: string;
   seller_name?: string | null;
 }
@@ -45,7 +47,7 @@ function ListingDetailPage() {
       const { data, error } = await supabase
         .from("listings")
         .select(
-          "id,user_id,category,title,description,price,location,phone,photos,created_at",
+          "id,user_id,category,title,description,price,location,phone,photos,video_url,created_at",
         )
         .eq("id", id)
         .maybeSingle();
@@ -70,6 +72,7 @@ function ListingDetailPage() {
   if (!listing) return null;
 
   const photos = listing.photos.length > 0 ? listing.photos : [];
+  const baseName = `moyo-markit-${slugify(listing.title)}`;
   const waUrl = buildWhatsAppUrl(
     listing.phone,
     `Olá! Vi o seu anúncio na Moyo Markit: "${listing.title}". Ainda está disponível?`,
@@ -79,13 +82,27 @@ function ListingDetailPage() {
     <div className="mx-auto max-w-5xl px-4 py-6">
       {/* Photo gallery */}
       <div className="overflow-hidden rounded-2xl border bg-muted">
-        <div className="aspect-[16/10] bg-muted">
+        <div className="relative aspect-[16/10] bg-muted">
           {photos[activePhoto] ? (
-            <img
-              src={photos[activePhoto]}
-              alt={listing.title}
-              className="h-full w-full object-cover"
-            />
+            <>
+              <img
+                src={photos[activePhoto]}
+                alt={listing.title}
+                className="h-full w-full object-cover"
+              />
+              <a
+                href={downloadHref(
+                  photos[activePhoto],
+                  `${baseName}-${activePhoto + 1}.${fileExtension(photos[activePhoto], "jpg")}`,
+                )}
+                download
+                rel="noopener"
+                className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 text-xs font-medium text-white backdrop-blur hover:bg-black/75"
+              >
+                <Download className="size-4" />
+                Baixar foto
+              </a>
+            </>
           ) : (
             <div className="grid h-full place-items-center text-muted-foreground">Sem fotos</div>
           )}
@@ -106,6 +123,35 @@ function ListingDetailPage() {
           </div>
         )}
       </div>
+
+      {listing.video_url && (
+        <div className="mt-4 overflow-hidden rounded-2xl border bg-card">
+          <video
+            src={listing.video_url}
+            controls
+            playsInline
+            preload="metadata"
+            poster={photos[0]}
+            className="aspect-video w-full bg-black"
+          />
+          <div className="flex items-center justify-between gap-3 p-3">
+            <span className="text-sm font-medium">Vídeo do anúncio</span>
+            <Button asChild variant="outline" size="sm">
+              <a
+                href={downloadHref(
+                  listing.video_url,
+                  `${baseName}.${fileExtension(listing.video_url, "mp4")}`,
+                )}
+                download
+                rel="noopener"
+              >
+                <Download className="size-4" />
+                Baixar vídeo
+              </a>
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 md:grid-cols-3">
         <div className="md:col-span-2">

@@ -1,9 +1,10 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { MapPin, Pencil, Trash2, Loader2 } from "lucide-react";
+import { MapPin, Pencil, Trash2, Loader2, Video } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { categoryLabel, formatKwanza } from "@/lib/format";
+import { removeFromStorage } from "@/lib/media";
 import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
@@ -24,6 +25,7 @@ export interface ListingCardData {
   location: string;
   category: "imoveis" | "servicos";
   photos: string[];
+  video_url?: string | null;
   created_at: string;
 }
 
@@ -47,6 +49,8 @@ export function ListingCard({
     try {
       const { error } = await supabase.from("listings").delete().eq("id", listing.id);
       if (error) throw error;
+      await removeFromStorage("listing-photos", listing.photos ?? []);
+      await removeFromStorage("listing-videos", [listing.video_url]);
       toast.success("Anúncio apagado.");
       onDeleted?.(listing.id);
     } catch (err) {
@@ -103,7 +107,7 @@ export function ListingCard({
         </div>
       )}
       <Link to="/listing/$id" params={{ id: listing.id }} className="block">
-        <div className="aspect-[4/3] overflow-hidden bg-muted">
+        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
           {cover ? (
             <img
               src={cover}
@@ -115,6 +119,11 @@ export function ListingCard({
             <div className="grid h-full place-items-center text-sm text-muted-foreground">
               Sem foto
             </div>
+          )}
+          {listing.video_url && (
+            <span className="absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">
+              <Video className="size-3" /> Vídeo
+            </span>
           )}
         </div>
         <div className="space-y-1.5 p-3">

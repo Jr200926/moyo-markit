@@ -1,10 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, PlusCircle, User } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useOwnProfile } from "@/lib/useOwnProfile";
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useAuth();
+  const { data: ownProfile } = useOwnProfile();
 
   const items = [
     { to: "/", label: "Home", icon: Home, match: (p: string) => p === "/" },
@@ -40,7 +42,17 @@ export function BottomNav() {
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className={`size-5 ${active ? "stroke-[2.5]" : ""}`} />
+                {it.label === "Perfil" && user && ownProfile?.avatar_url ? (
+                  <img
+                    src={ownProfile.avatar_url}
+                    alt=""
+                    className={`size-6 rounded-full object-cover ring-2 ${
+                      active ? "ring-primary" : "ring-transparent"
+                    }`}
+                  />
+                ) : (
+                  <Icon className={`size-5 ${active ? "stroke-[2.5]" : ""}`} />
+                )}
                 {it.label}
               </Link>
             </li>

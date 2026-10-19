@@ -30,7 +30,7 @@ function Home_() {
     queryFn: async (): Promise<ListingCardData[]> => {
       const { data, error } = await supabase
         .from("listings")
-        .select("id,title,price,location,category,photos,created_at")
+        .select("id,title,price,location,category,photos,video_url,created_at")
         .order("created_at", { ascending: false })
         .limit(12);
       if (error) throw error;

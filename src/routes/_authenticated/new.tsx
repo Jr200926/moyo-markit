@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { ImagePlus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { VideoPicker } from "@/components/VideoPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +48,7 @@ function NewListing() {
   const [location, setLocation] = useState("");
   const [phone, setPhone] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [video, setVideo] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   // Pre-fill phone from profile
@@ -97,6 +99,17 @@ function NewListing() {
         photoUrls.push(data.publicUrl);
       }
 
+      let videoUrl: string | null = null;
+      if (video) {
+        const ext = video.name.split(".").pop() || "mp4";
+        const vpath = `${user.id}/${crypto.randomUUID()}.${ext}`;
+        const { error: vErr } = await supabase.storage
+          .from("listing-videos")
+          .upload(vpath, video, { contentType: video.type, upsert: false });
+        if (vErr) throw vErr;
+        videoUrl = supabase.storage.from("listing-videos").getPublicUrl(vpath).data.publicUrl;
+      }
+
       const priceNum = parsed.data.price ? Number(parsed.data.price) : null;
       const { data, error } = await supabase
         .from("listings")
@@ -109,6 +122,7 @@ function NewListing() {
           location: parsed.data.location ?? "",
           phone: parsed.data.phone,
           photos: photoUrls,
+          video_url: videoUrl,
         })
         .select("id")
         .single();
@@ -237,8 +251,14 @@ function NewListing() {
           </div>
         </div>
 
+        <VideoPicker file={video} onPick={setVideo} onRemove={() => setVideo(null)} />
+
         <Button type="submit" disabled={submitting} className="w-full" size="lg">
-          {submitting ? "A publicar..." : "Publicar anúncio"}
+          {submitting
+            ? video
+              ? "A enviar o vídeo, aguarde..."
+              : "A publicar..."
+            : "Publicar anúncio"}
         </Button>
       </form>
     </div>

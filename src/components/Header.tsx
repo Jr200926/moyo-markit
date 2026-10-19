@@ -12,7 +12,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/" className="flex shrink-0 items-center gap-2">
           <img src="/logo-icon.png" alt="Moyo Markit" className="h-9 w-9" />
           <span className="text-lg font-bold tracking-tight">
             <span className="text-[#0a5c2b] dark:text-[#7be04a]">Moyo</span>
@@ -20,7 +20,7 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="flex items-center gap-2">
+        <nav className="flex min-w-0 items-center gap-1 sm:gap-2">
           {user ? (
             <>
               {ownProfile?.is_admin && (
@@ -31,14 +31,22 @@ export function Header() {
                   </Link>
                 </Button>
               )}
-              <Button asChild variant="default" size="sm">
+              <Button asChild variant="default" size="sm" className="hidden md:inline-flex">
                 <Link to="/new">
                   <Plus className="size-4" /> Publicar
                 </Link>
               </Button>
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
                 <Link to="/profile/$id" params={{ id: user.id }}>
-                  <UserIcon className="size-4" />
+                  {ownProfile?.avatar_url ? (
+                    <img
+                      src={ownProfile.avatar_url}
+                      alt=""
+                      className="size-7 rounded-full object-cover ring-1 ring-border"
+                    />
+                  ) : (
+                    <UserIcon className="size-4" />
+                  )}
                   <span className="hidden sm:inline">Perfil</span>
                 </Link>
               </Button>
@@ -58,7 +66,7 @@ export function Header() {
               <Button asChild variant="ghost" size="sm">
                 <Link to="/auth">Entrar</Link>
               </Button>
-              <Button asChild size="sm">
+              <Button asChild size="sm" className="hidden md:inline-flex">
                 <Link to="/auth">Publicar</Link>
               </Button>
             </>

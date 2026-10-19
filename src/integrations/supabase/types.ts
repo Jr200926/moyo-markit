@@ -27,6 +27,7 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          video_url: string | null
         }
         Insert: {
           category: Database["public"]["Enums"]["listing_category"]
@@ -40,6 +41,7 @@ export type Database = {
           title: string
           updated_at?: string
           user_id: string
+          video_url?: string | null
         }
         Update: {
           category?: Database["public"]["Enums"]["listing_category"]
@@ -53,34 +55,44 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+          video_url?: string | null
         }
         Relationships: []
       }
       profiles: {
         Row: {
+          avatar_url: string | null
+          bio: string
           created_at: string
           full_name: string
           id: string
           is_admin: boolean
           is_banned: boolean
+          location: string
           phone: string | null
           updated_at: string
         }
         Insert: {
+          avatar_url?: string | null
+          bio?: string
           created_at?: string
           full_name?: string
           id: string
           is_admin?: boolean
           is_banned?: boolean
+          location?: string
           phone?: string | null
           updated_at?: string
         }
         Update: {
+          avatar_url?: string | null
+          bio?: string
           created_at?: string
           full_name?: string
           id?: string
           is_admin?: boolean
           is_banned?: boolean
+          location?: string
           phone?: string | null
           updated_at?: string
         }

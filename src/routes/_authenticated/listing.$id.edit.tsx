@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { ImagePlus, X, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { VideoPicker } from "@/components/VideoPicker";
+import { removeFromStorage } from "@/lib/media";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +49,7 @@ interface ListingRow {
   location: string;
   phone: string;
   photos: string[];
+  video_url: string | null;
 }
 
 function EditListing() {
@@ -59,7 +62,7 @@ function EditListing() {
     queryFn: async (): Promise<ListingRow> => {
       const { data, error } = await supabase
         .from("listings")
-        .select("id,user_id,category,title,description,price,location,phone,photos")
+        .select("id,user_id,category,title,description,price,location,phone,photos,video_url")
         .eq("id", id)
         .maybeSingle();
       if (error) throw error;
@@ -76,6 +79,8 @@ function EditListing() {
   const [phone, setPhone] = useState("");
   const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
   const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [existingVideo, setExistingVideo] = useState<string | null>(null);
+  const [newVideo, setNewVideo] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
@@ -89,6 +94,7 @@ function EditListing() {
     setLocation(listing.location ?? "");
     setPhone(listing.phone ?? "");
     setExistingPhotos(listing.photos ?? []);
+    setExistingVideo(listing.video_url ?? null);
     setLoaded(true);
   }, [listing, loaded]);
 
@@ -131,6 +137,17 @@ function EditListing() {
         uploadedUrls.push(data.publicUrl);
       }
 
+      let finalVideo: string | null = existingVideo;
+      if (newVideo) {
+        const ext = newVideo.name.split(".").pop() || "mp4";
+        const vpath = `${user.id}/${crypto.randomUUID()}.${ext}`;
+        const { error: vErr } = await supabase.storage
+          .from("listing-videos")
+          .upload(vpath, newVideo, { contentType: newVideo.type, upsert: false });
+        if (vErr) throw vErr;
+        finalVideo = supabase.storage.from("listing-videos").getPublicUrl(vpath).data.publicUrl;
+      }
+
       const priceNum = parsed.data.price ? Number(parsed.data.price) : null;
       const { error } = await supabase
         .from("listings")
@@ -142,9 +159,16 @@ function EditListing() {
           location: parsed.data.location ?? "",
           phone: parsed.data.phone,
           photos: [...existingPhotos, ...uploadedUrls],
+          video_url: finalVideo,
         })
         .eq("id", listing.id);
       if (error) throw error;
+
+      const removedPhotos = (listing.photos ?? []).filter((u) => !existingPhotos.includes(u));
+      await removeFromStorage("listing-photos", removedPhotos);
+      if (listing.video_url && listing.video_url !== finalVideo) {
+        await removeFromStorage("listing-videos", [listing.video_url]);
+      }
       toast.success("Anúncio atualizado!");
       navigate({ to: "/listing/$id", params: { id: listing.id } });
     } catch (err) {
@@ -298,8 +322,18 @@ function EditListing() {
           </div>
         </div>
 
+        <VideoPicker
+          file={newVideo}
+          existingUrl={existingVideo}
+          onPick={(f) => setNewVideo(f)}
+          onRemove={() => {
+            if (newVideo) setNewVideo(null);
+            else setExistingVideo(null);
+          }}
+        />
+
         <Button type="submit" disabled={submitting} className="w-full" size="lg">
-          {submitting ? "A guardar..." : "Guardar alterações"}
+          {submitting ? (newVideo ? "A enviar o vídeo, aguarde..." : "A guardar...") : "Guardar alterações"}
         </Button>
       </form>
     </div>

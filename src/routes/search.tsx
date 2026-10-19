@@ -58,7 +58,7 @@ function SearchPage() {
     queryFn: async (): Promise<ListingCardData[]> => {
       let query = supabase
         .from("listings")
-        .select("id,title,price,location,category,photos,created_at")
+        .select("id,title,price,location,category,photos,video_url,created_at")
         .order("created_at", { ascending: false })
         .limit(60);
 
