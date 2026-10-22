@@ -1,9 +1,11 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { MapPin, Calendar, MessageCircle, Pencil, Download, User as UserIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { daysLeft } from "@/lib/accounts";
+import { toast } from "sonner";
 import { downloadHref, fileExtension, slugify } from "@/lib/media";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +22,7 @@ interface ListingDetail {
   phone: string;
   photos: string[];
   video_url: string | null;
+  expires_at: string;
   created_at: string;
   seller_name?: string | null;
 }
@@ -40,6 +43,7 @@ function ListingDetailPage() {
   const { id } = Route.useParams();
   const { user } = useAuth();
   const [activePhoto, setActivePhoto] = useState(0);
+  const queryClient = useQueryClient();
 
   const { data: listing, isLoading } = useQuery({
     queryKey: ["listing", id],
@@ -47,7 +51,7 @@ function ListingDetailPage() {
       const { data, error } = await supabase
         .from("listings")
         .select(
-          "id,user_id,category,title,description,price,location,phone,photos,video_url,created_at",
+          "id,user_id,category,title,description,price,location,phone,photos,video_url,expires_at,created_at",
         )
         .eq("id", id)
         .maybeSingle();
@@ -182,6 +186,29 @@ function ListingDetailPage() {
         </div>
 
         <aside className="space-y-3">
+          {user?.id === listing.user_id && (daysLeft(listing.expires_at) ?? 1) <= 0 && (
+            <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+              <p className="font-medium">Este anúncio expirou</p>
+              <p className="mt-0.5 text-muted-foreground">
+                Só você o vê. Renove para voltar a aparecer a todos por mais 30 dias.
+              </p>
+              <Button
+                size="sm"
+                className="mt-2"
+                onClick={async () => {
+                  const { error } = await supabase.rpc("renew_listing", { listing_id: listing.id });
+                  if (error) {
+                    toast.error(error.message);
+                    return;
+                  }
+                  toast.success("Anúncio renovado por mais 30 dias.");
+                  queryClient.invalidateQueries({ queryKey: ["listing", id] });
+                }}
+              >
+                Renovar anúncio
+              </Button>
+            </div>
+          )}
           {user?.id === listing.user_id && (
             <Button asChild variant="outline" size="lg" className="w-full">
               <Link to="/listing/$id/edit" params={{ id: listing.id }}>

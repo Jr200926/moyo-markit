@@ -1,3 +1,4 @@
+import { normalizeAngolanPhone, PHONE_ERROR } from "@/lib/phone";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { z } from "zod";
@@ -26,9 +27,7 @@ const signUpSchema = signInSchema.extend({
   phone: z
     .string()
     .trim()
-    .min(9, "Telefone obrigatório")
-    .max(20)
-    .regex(/^[+\d\s-]+$/, "Telefone inválido"),
+    .refine((v) => normalizeAngolanPhone(v) !== null, PHONE_ERROR),
 });
 
 function AuthPage() {
@@ -147,7 +146,7 @@ function SignUpForm() {
         emailRedirectTo: window.location.origin,
         data: {
           full_name: parsed.data.full_name,
-          phone: parsed.data.phone,
+          phone: normalizeAngolanPhone(parsed.data.phone),
         },
       },
     });
@@ -178,10 +177,14 @@ function SignUpForm() {
           id="phone-up"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          placeholder="+244 9XX XXX XXX"
+          placeholder="923 456 789"
+          inputMode="tel"
           required
           maxLength={20}
         />
+        <p className="text-xs text-muted-foreground">
+          Número angolano, o mesmo que usa no WhatsApp. É por ele que os compradores falam consigo.
+        </p>
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="email-up">Email</Label>

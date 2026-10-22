@@ -6,6 +6,9 @@ import { ImagePlus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { VideoPicker } from "@/components/VideoPicker";
+import { BlockedNotice } from "@/components/BlockedNotice";
+import { useOwnProfile } from "@/lib/useOwnProfile";
+import { normalizeAngolanPhone, PHONE_ERROR } from "@/lib/phone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,13 +35,12 @@ const schema = z.object({
   phone: z
     .string()
     .trim()
-    .min(9, "Telefone obrigatório")
-    .max(20)
-    .regex(/^[+\d\s-]+$/, "Telefone inválido"),
+    .refine((v) => normalizeAngolanPhone(v) !== null, PHONE_ERROR),
 });
 
 function NewListing() {
   const { user } = useAuth();
+  const { data: ownProfile } = useOwnProfile();
   const navigate = useNavigate();
 
   const [category, setCategory] = useState<"imoveis" | "servicos">("imoveis");
@@ -120,7 +122,7 @@ function NewListing() {
           description: parsed.data.description ?? "",
           price: Number.isFinite(priceNum as number) ? priceNum : null,
           location: parsed.data.location ?? "",
-          phone: parsed.data.phone,
+          phone: normalizeAngolanPhone(parsed.data.phone) as string,
           photos: photoUrls,
           video_url: videoUrl,
         })
@@ -135,6 +137,8 @@ function NewListing() {
       setSubmitting(false);
     }
   }
+
+  if (ownProfile?.is_banned) return <BlockedNotice />;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">

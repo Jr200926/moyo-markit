@@ -19,6 +19,7 @@ export type Database = {
           category: Database["public"]["Enums"]["listing_category"]
           created_at: string
           description: string
+          expires_at: string
           id: string
           location: string
           phone: string
@@ -33,6 +34,7 @@ export type Database = {
           category: Database["public"]["Enums"]["listing_category"]
           created_at?: string
           description?: string
+          expires_at?: string
           id?: string
           location?: string
           phone: string
@@ -103,7 +105,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      admin_delete_user: { Args: { target: string }; Returns: undefined }
+      delete_my_account: { Args: Record<PropertyKey, never>; Returns: undefined }
+      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean }
+      is_banned: { Args: Record<PropertyKey, never>; Returns: boolean }
+      renew_listing: { Args: { listing_id: string }; Returns: undefined }
     }
     Enums: {
       listing_category: "imoveis" | "servicos"

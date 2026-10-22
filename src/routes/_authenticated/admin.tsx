@@ -6,6 +6,7 @@ import { ShieldAlert, Trash2, Ban } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOwnProfile } from "@/lib/useOwnProfile";
 import { removeFromStorage } from "@/lib/media";
+import { purgeUserFiles } from "@/lib/accounts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatKwanza, categoryLabel } from "@/lib/format";
@@ -89,6 +90,19 @@ function AdminPage() {
     toast.success(u.is_banned ? "Utilizador desbloqueado." : "Utilizador bloqueado.");
     queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     queryClient.invalidateQueries({ queryKey: ["admin-listings"] });
+  }
+
+  async function deleteAccount(u: ProfileRow) {
+    try {
+      await purgeUserFiles(u.id);
+      const { error } = await supabase.rpc("admin_delete_user", { target: u.id });
+      if (error) throw error;
+      toast.success("Conta apagada.");
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-listings"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível apagar a conta");
+    }
   }
 
   async function deleteListing(l: ListingRow) {
@@ -176,6 +190,33 @@ function AdminPage() {
                     <Ban className="size-4" />
                     {u.is_banned ? "Desbloquear" : "Bloquear"}
                   </Button>
+                )}
+                {!u.is_admin && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline" aria-label="Apagar conta">
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Apagar a conta de {u.full_name || "este utilizador"}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          O perfil, todos os anúncios, fotos e vídeos desta conta serão removidos
+                          para sempre. A pessoa poderá criar uma conta nova.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteAccount(u)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Apagar conta
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 )}
               </div>
             </div>

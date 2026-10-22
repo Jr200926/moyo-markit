@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -16,12 +16,23 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { resizeToSquareJpeg } from "@/lib/image";
+import { normalizeAngolanPhone, PHONE_ERROR } from "@/lib/phone";
+import { purgeUserFiles } from "@/lib/accounts";
 import { ListingCard, type ListingCardData } from "@/components/ListingCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
@@ -51,21 +62,22 @@ const profileSchema = z.object({
   phone: z
     .string()
     .trim()
-    .max(20, "Telefone demasiado longo")
-    .regex(/^[+\d\s-]*$/, "Telefone inválido"),
+    .refine((v) => v === "" || normalizeAngolanPhone(v) !== null, PHONE_ERROR),
   location: z.string().trim().max(80, "Localização demasiado longa"),
   bio: z.string().trim().max(280, "A descrição pode ter no máximo 280 caracteres"),
 });
 
 function ProfilePage() {
   const { id } = Route.useParams();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const queryClient = useQueryClient();
   const isOwnProfile = user?.id === id;
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const navigate = useNavigate();
 
   const { data: profile } = useQuery({
     queryKey: ["profile", id],
@@ -85,7 +97,7 @@ function ProfilePage() {
     queryFn: async (): Promise<ListingCardData[]> => {
       const { data, error } = await supabase
         .from("listings")
-        .select("id,title,price,location,category,photos,video_url,created_at")
+        .select("id,title,price,location,category,photos,video_url,expires_at,created_at")
         .eq("user_id", id)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -263,6 +275,9 @@ function ProfilePage() {
                   key={l.id}
                   listing={l}
                   showOwnerActions={isOwnProfile}
+                  onRenewed={() =>
+                    queryClient.invalidateQueries({ queryKey: ["profile-listings", id] })
+                  }
                   onDeleted={() =>
                     queryClient.setQueryData(
                       ["profile-listings", id],
@@ -317,6 +332,24 @@ function ProfilePage() {
                 <p className="mt-1 text-sm">{memberSince}</p>
               </div>
             )}
+            {isOwnProfile && (
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-medium text-destructive">Zona de perigo</h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Apagar a conta remove o seu perfil, anúncios, fotos e vídeos. Não pode ser
+                  desfeito.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  onClick={() => setDeleteOpen(true)}
+                >
+                  Apagar a minha conta
+                </Button>
+              </div>
+            )}
           </div>
         </TabsContent>
       </Tabs>
@@ -336,6 +369,19 @@ function ProfilePage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {isOwnProfile && user && (
+        <DeleteAccountDialog
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          userId={user.id}
+          onDeleted={async () => {
+            await signOut();
+            queryClient.clear();
+            navigate({ to: "/" });
+          }}
+        />
+      )}
 
       {isOwnProfile && profile && (
         <EditProfileDialog
@@ -393,7 +439,7 @@ function EditProfileDialog({
         .from("profiles")
         .update({
           full_name: parsed.data.full_name,
-          phone: parsed.data.phone || null,
+          phone: parsed.data.phone ? normalizeAngolanPhone(parsed.data.phone) : null,
           location: parsed.data.location,
           bio: parsed.data.bio,
         })
@@ -436,7 +482,7 @@ function EditProfileDialog({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               maxLength={20}
-              placeholder="+244 ..."
+              placeholder="923 456 789"
             />
           </div>
 
@@ -475,5 +521,67 @@ function EditProfileDialog({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function DeleteAccountDialog({
+  open,
+  onOpenChange,
+  userId,
+  onDeleted,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  userId: string;
+  onDeleted: () => Promise<void>;
+}) {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function confirm() {
+    setBusy(true);
+    try {
+      await purgeUserFiles(userId);
+      const { error } = await supabase.rpc("delete_my_account");
+      if (error) throw error;
+      toast.success("A sua conta foi apagada.");
+      await onDeleted();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível apagar a conta");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <AlertDialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!busy) {
+          setText("");
+          onOpenChange(v);
+        }
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Apagar a sua conta?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Todos os seus anúncios, fotos e vídeos serão removidos para sempre. Para confirmar,
+            escreva <strong>APAGAR</strong> abaixo.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="APAGAR" />
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={busy}>Cancelar</AlertDialogCancel>
+          <Button
+            variant="destructive"
+            disabled={busy || text.trim().toUpperCase() !== "APAGAR"}
+            onClick={confirm}
+          >
+            {busy ? "A apagar..." : "Apagar conta"}
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
