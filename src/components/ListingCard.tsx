@@ -24,7 +24,7 @@ export interface ListingCardData {
   title: string;
   price: number | null;
   location: string;
-  category: "imoveis" | "servicos";
+  category: string;
   photos: string[];
   video_url?: string | null;
   expires_at?: string;
@@ -163,7 +163,7 @@ export function ListingCard({
                 expired ? "bg-destructive" : "bg-amber-600"
               }`}
             >
-              {expired ? "Expirado" : `Expira em ${left} ${left === 1 ? "dia" : "dias"}`}
+              {expired ? "Expirado, renove para voltar" : `Expira em ${left} ${left === 1 ? "dia" : "dias"}`}
             </span>
           )}
           {listing.video_url && (

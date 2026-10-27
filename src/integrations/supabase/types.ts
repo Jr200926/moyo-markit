@@ -16,7 +16,7 @@ export type Database = {
     Tables: {
       listings: {
         Row: {
-          category: Database["public"]["Enums"]["listing_category"]
+          category: string
           created_at: string
           description: string
           expires_at: string
@@ -31,7 +31,7 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
-          category: Database["public"]["Enums"]["listing_category"]
+          category: string
           created_at?: string
           description?: string
           expires_at?: string
@@ -46,7 +46,7 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
-          category?: Database["public"]["Enums"]["listing_category"]
+          category?: string
           created_at?: string
           description?: string
           id?: string

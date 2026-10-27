@@ -11,9 +11,7 @@ export function formatKwanza(value: number | null | undefined): string {
   }
 }
 
-export function categoryLabel(c: "imoveis" | "servicos"): string {
-  return c === "imoveis" ? "Imóveis" : "Serviços";
-}
+export { categoryLabel } from "@/lib/categories";
 
 export function buildWhatsAppUrl(phone: string, message: string): string {
   const digits = phone.replace(/\D/g, "");

@@ -6,7 +6,7 @@ import { ShieldAlert, Trash2, Ban } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOwnProfile } from "@/lib/useOwnProfile";
 import { removeFromStorage } from "@/lib/media";
-import { purgeUserFiles } from "@/lib/accounts";
+import { purgeUserFiles, daysLeft, GRACE_DAYS } from "@/lib/accounts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatKwanza, categoryLabel } from "@/lib/format";
@@ -40,10 +40,11 @@ interface ListingRow {
   id: string;
   user_id: string;
   title: string;
-  category: "imoveis" | "servicos";
+  category: string;
   price: number | null;
   photos: string[];
   video_url: string | null;
+  expires_at: string;
   created_at: string;
 }
 
@@ -71,7 +72,7 @@ function AdminPage() {
     queryFn: async (): Promise<ListingRow[]> => {
       const { data, error } = await supabase
         .from("listings")
-        .select("id,user_id,title,category,price,photos,video_url,created_at")
+        .select("id,user_id,title,category,price,photos,video_url,expires_at,created_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -103,6 +104,40 @@ function AdminPage() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Não foi possível apagar a conta");
     }
+  }
+
+  const staleListings = (listingsQuery.data ?? []).filter(
+    (l) => (daysLeft(l.expires_at) ?? 1) <= -GRACE_DAYS,
+  );
+
+  async function cleanStale() {
+    let removed = 0;
+    try {
+      for (let i = 0; i < staleListings.length; i += 20) {
+        const batch = staleListings.slice(i, i + 20);
+        await removeFromStorage(
+          "listing-photos",
+          batch.flatMap((l) => l.photos ?? []),
+        );
+        await removeFromStorage(
+          "listing-videos",
+          batch.map((l) => l.video_url),
+        );
+        const { error } = await supabase
+          .from("listings")
+          .delete()
+          .in(
+            "id",
+            batch.map((l) => l.id),
+          );
+        if (error) throw error;
+        removed += batch.length;
+      }
+      toast.success(`${removed} anúncio(s) expirado(s) apagado(s).`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao limpar anúncios expirados");
+    }
+    queryClient.invalidateQueries({ queryKey: ["admin-listings"] });
   }
 
   async function deleteListing(l: ListingRow) {
@@ -226,6 +261,40 @@ function AdminPage() {
 
       {tab === "listings" && (
         <div className="mt-4 space-y-2">
+          {staleListings.length > 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3">
+              <p className="text-sm">
+                <strong>{staleListings.length}</strong> anúncio(s) expirado(s) há mais de{" "}
+                {GRACE_DAYS} dias, a ocupar espaço.
+              </p>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive">
+                    <Trash2 className="size-4" />
+                    Limpar agora
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Apagar {staleListings.length} anúncio(s) expirado(s)?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Serão removidos para sempre, com as respetivas fotos e vídeos. Os donos já
+                      tiveram {GRACE_DAYS} dias para os renovar.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={cleanStale}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Apagar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
           {listingsQuery.data?.map((l) => (
             <div
               key={l.id}
@@ -237,6 +306,11 @@ function AdminPage() {
                 </Link>
                 <p className="text-xs text-muted-foreground">
                   {categoryLabel(l.category)} · {formatKwanza(l.price)}
+                  {(daysLeft(l.expires_at) ?? 1) <= 0 && (
+                    <span className="ml-2 rounded-full bg-destructive px-2 py-0.5 text-[10px] font-medium text-white">
+                      Expirado
+                    </span>
+                  )}
                 </p>
               </div>
               <AlertDialog>

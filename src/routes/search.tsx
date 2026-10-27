@@ -15,10 +15,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ListingCard, type ListingCardData } from "@/components/ListingCard";
+import { CATEGORIES, CATEGORY_VALUES, type Category } from "@/lib/categories";
 
 const searchSchema = z.object({
   q: z.string().optional(),
-  category: z.enum(["imoveis", "servicos"]).optional(),
+  category: z.enum(CATEGORY_VALUES).optional(),
   location: z.string().optional(),
   min: z.coerce.number().optional(),
   max: z.coerce.number().optional(),
@@ -80,7 +81,7 @@ function SearchPage() {
       to: "/search",
       search: {
         q: q || undefined,
-        category: category === "all" ? undefined : (category as "imoveis" | "servicos"),
+        category: category === "all" ? undefined : (category as Category),
         location: location || undefined,
         min: min ? Number(min) : undefined,
         max: max ? Number(max) : undefined,
@@ -112,8 +113,11 @@ function SearchPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas</SelectItem>
-              <SelectItem value="imoveis">Imóveis</SelectItem>
-              <SelectItem value="servicos">Serviços</SelectItem>
+              {CATEGORIES.map((c) => (
+                <SelectItem key={c.value} value={c.value}>
+                  {c.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

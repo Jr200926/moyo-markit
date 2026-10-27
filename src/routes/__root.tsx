@@ -76,16 +76,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Moyo Markit — Imóveis e Serviços em Luanda" },
+      { title: "Moyo Markit — Compre e venda em Luanda" },
       {
         name: "description",
         content:
-          "Compre, venda e encontre serviços em Luanda. Anuncie imóveis e contacte vendedores diretamente pelo WhatsApp.",
+          "Compre e venda de tudo em Luanda: imóveis, veículos, eletrónicos, serviços e muito mais. Fale diretamente com o vendedor pelo WhatsApp.",
       },
-      { property: "og:title", content: "Moyo Markit — Imóveis e Serviços em Luanda" },
+      { property: "og:title", content: "Moyo Markit — Compre e venda em Luanda" },
       {
         property: "og:description",
-        content: "Marketplace simples de imóveis e serviços em Angola.",
+        content: "Marketplace simples para comprar e vender em Angola.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

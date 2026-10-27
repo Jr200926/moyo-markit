@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
+import { MailCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,8 @@ function AuthPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+
   useEffect(() => {
     if (user) navigate({ to: "/" });
   }, [user, navigate]);
@@ -51,24 +54,28 @@ function AuthPage() {
           </p>
         </div>
 
-        <Tabs defaultValue="signin">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Entrar</TabsTrigger>
-            <TabsTrigger value="signup">Criar conta</TabsTrigger>
-          </TabsList>
-          <TabsContent value="signin" className="mt-4">
-            <SignInForm />
-          </TabsContent>
-          <TabsContent value="signup" className="mt-4">
-            <SignUpForm />
-          </TabsContent>
-        </Tabs>
+        {pendingEmail ? (
+          <ConfirmEmailPanel email={pendingEmail} onBack={() => setPendingEmail(null)} />
+        ) : (
+          <Tabs defaultValue="signin">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signin">Entrar</TabsTrigger>
+              <TabsTrigger value="signup">Criar conta</TabsTrigger>
+            </TabsList>
+            <TabsContent value="signin" className="mt-4">
+              <SignInForm onNeedsConfirmation={setPendingEmail} />
+            </TabsContent>
+            <TabsContent value="signup" className="mt-4">
+              <SignUpForm onNeedsConfirmation={setPendingEmail} />
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </div>
   );
 }
 
-function SignInForm() {
+function SignInForm({ onNeedsConfirmation }: { onNeedsConfirmation: (email: string) => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -85,6 +92,14 @@ function SignInForm() {
     const { error } = await supabase.auth.signInWithPassword(parsed.data);
     setLoading(false);
     if (error) {
+      if (error.code === "email_not_confirmed" || /not confirmed/i.test(error.message)) {
+        onNeedsConfirmation(parsed.data.email);
+        return;
+      }
+      if (/invalid login credentials/i.test(error.message)) {
+        toast.error("Email ou palavra-passe incorretos.");
+        return;
+      }
       toast.error(error.message);
       return;
     }
@@ -123,7 +138,7 @@ function SignInForm() {
   );
 }
 
-function SignUpForm() {
+function SignUpForm({ onNeedsConfirmation }: { onNeedsConfirmation: (email: string) => void }) {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -139,7 +154,7 @@ function SignUpForm() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
@@ -153,6 +168,10 @@ function SignUpForm() {
     setLoading(false);
     if (error) {
       toast.error(error.message);
+      return;
+    }
+    if (!data.session) {
+      onNeedsConfirmation(parsed.data.email);
       return;
     }
     toast.success("Conta criada! Já pode publicar.");
@@ -213,5 +232,69 @@ function SignUpForm() {
         {loading ? "A criar..." : "Criar conta"}
       </Button>
     </form>
+  );
+}
+
+function ConfirmEmailPanel({ email, onBack }: { email: string; onBack: () => void }) {
+  const [cooldown, setCooldown] = useState(60);
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
+
+  async function resend() {
+    setSending(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: window.location.origin },
+    });
+    setSending(false);
+    if (error) {
+      toast.error(
+        /rate limit|seconds/i.test(error.message)
+          ? "Aguarde um pouco antes de pedir outro e-mail."
+          : error.message,
+      );
+      return;
+    }
+    toast.success("E-mail reenviado.");
+    setCooldown(60);
+  }
+
+  return (
+    <div className="text-center">
+      <div className="mx-auto grid size-14 place-items-center rounded-full bg-primary/10 text-primary">
+        <MailCheck className="size-7" />
+      </div>
+      <h2 className="mt-4 text-lg font-semibold">Verifique o seu e-mail</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Enviámos um link de confirmação para <strong className="text-foreground">{email}</strong>.
+        Abra o e-mail e toque no link para ativar a sua conta. Veja também a pasta de spam.
+      </p>
+      <Button
+        type="button"
+        variant="outline"
+        className="mt-5 w-full"
+        disabled={sending || cooldown > 0}
+        onClick={resend}
+      >
+        {sending
+          ? "A enviar..."
+          : cooldown > 0
+            ? `Reenviar e-mail (${cooldown}s)`
+            : "Reenviar e-mail"}
+      </Button>
+      <button
+        type="button"
+        onClick={onBack}
+        className="mt-3 text-sm text-muted-foreground underline-offset-2 hover:underline"
+      >
+        Voltar
+      </button>
+    </div>
   );
 }

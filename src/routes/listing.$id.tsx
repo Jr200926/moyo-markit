@@ -14,7 +14,7 @@ import { buildWhatsAppUrl, categoryLabel, formatKwanza } from "@/lib/format";
 interface ListingDetail {
   id: string;
   user_id: string;
-  category: "imoveis" | "servicos";
+  category: string;
   title: string;
   description: string;
   price: number | null;

@@ -24,6 +24,9 @@ export async function purgeUserFiles(userId: string) {
   await removeFromStorage("avatars", [profile?.avatar_url]);
 }
 
+/** Dias que um anúncio expirado fica guardado antes de poder ser apagado de vez. */
+export const GRACE_DAYS = 30;
+
 export function daysLeft(expiresAt: string | null | undefined): number | null {
   if (!expiresAt) return null;
   return Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 86_400_000);

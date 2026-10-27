@@ -1,3 +1,4 @@
+import { CATEGORIES, CATEGORY_VALUES, type Category } from "@/lib/categories";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/new")({
 });
 
 const schema = z.object({
-  category: z.enum(["imoveis", "servicos"]),
+  category: z.enum(CATEGORY_VALUES),
   title: z.string().trim().min(4, "Título demasiado curto").max(120),
   description: z.string().trim().max(2000).default(""),
   price: z.string().optional(),
@@ -43,7 +44,7 @@ function NewListing() {
   const { data: ownProfile } = useOwnProfile();
   const navigate = useNavigate();
 
-  const [category, setCategory] = useState<"imoveis" | "servicos">("imoveis");
+  const [category, setCategory] = useState<Category>("imoveis");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -152,14 +153,17 @@ function NewListing() {
           <Label>Categoria</Label>
           <Select
             value={category}
-            onValueChange={(v) => setCategory(v as "imoveis" | "servicos")}
+            onValueChange={(v) => setCategory(v as Category)}
           >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="imoveis">Imóveis</SelectItem>
-              <SelectItem value="servicos">Serviços</SelectItem>
+              {CATEGORIES.map((c) => (
+                <SelectItem key={c.value} value={c.value}>
+                  {c.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

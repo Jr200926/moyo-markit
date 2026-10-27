@@ -1,3 +1,4 @@
+import { CATEGORIES, CATEGORY_VALUES, type Category } from "@/lib/categories";
 import { createFileRoute, useNavigate, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/_authenticated/listing/$id/edit")({
 });
 
 const schema = z.object({
-  category: z.enum(["imoveis", "servicos"]),
+  category: z.enum(CATEGORY_VALUES),
   title: z.string().trim().min(4, "Título demasiado curto").max(120),
   description: z.string().trim().max(2000).default(""),
   price: z.string().optional(),
@@ -43,7 +44,7 @@ const schema = z.object({
 interface ListingRow {
   id: string;
   user_id: string;
-  category: "imoveis" | "servicos";
+  category: string;
   title: string;
   description: string;
   price: number | null;
@@ -73,7 +74,7 @@ function EditListing() {
     },
   });
 
-  const [category, setCategory] = useState<"imoveis" | "servicos">("imoveis");
+  const [category, setCategory] = useState<Category>("imoveis");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -89,7 +90,7 @@ function EditListing() {
   // Pre-fill form once the listing loads
   useEffect(() => {
     if (!listing || loaded) return;
-    setCategory(listing.category);
+    setCategory(listing.category as Category);
     setTitle(listing.title);
     setDescription(listing.description ?? "");
     setPrice(listing.price != null ? String(listing.price) : "");
@@ -216,13 +217,16 @@ function EditListing() {
       >
         <div className="space-y-1.5">
           <Label>Categoria</Label>
-          <Select value={category} onValueChange={(v) => setCategory(v as "imoveis" | "servicos")}>
+          <Select value={category} onValueChange={(v) => setCategory(v as Category)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="imoveis">Imóveis</SelectItem>
-              <SelectItem value="servicos">Serviços</SelectItem>
+              {CATEGORIES.map((c) => (
+                <SelectItem key={c.value} value={c.value}>
+                  {c.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

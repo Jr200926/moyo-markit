@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Home, Search, Wrench } from "lucide-react";
+import { Search } from "lucide-react";
+import { CATEGORIES } from "@/lib/categories";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,7 @@ import { ListingCard, type ListingCardData } from "@/components/ListingCard";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Moyo Markit — Imóveis e Serviços em Luanda" },
+      { title: "Moyo Markit — Compre e venda em Luanda" },
       {
         name: "description",
         content:
@@ -44,7 +45,7 @@ function Home_() {
       <section className="relative overflow-hidden bg-gradient-to-br from-primary to-[oklch(0.45_0.14_180)] text-primary-foreground">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
           <h1 className="max-w-2xl text-3xl font-bold leading-tight sm:text-5xl">
-            Imóveis e serviços em Luanda, ao alcance de uma mensagem.
+            Compre e venda em Luanda, ao alcance de uma mensagem.
           </h1>
           <p className="mt-3 max-w-xl text-sm opacity-90 sm:text-base">
             Procure, anuncie e fale diretamente com o vendedor no WhatsApp. Simples e gratuito.
@@ -62,7 +63,7 @@ function Home_() {
               <Input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Ex.: Casa T2 no Benfica"
+                placeholder="Ex.: iPhone 13, casa T2, sofá..."
                 className="h-12 bg-card pl-9 text-foreground"
               />
             </div>
@@ -72,12 +73,16 @@ function Home_() {
           </form>
 
           <div className="mt-6 flex flex-wrap gap-2">
-            <CategoryChip to="/search" search={{ category: "imoveis" }} icon={<Home className="size-4" />}>
-              Imóveis
-            </CategoryChip>
-            <CategoryChip to="/search" search={{ category: "servicos" }} icon={<Wrench className="size-4" />}>
-              Serviços
-            </CategoryChip>
+            {CATEGORIES.map((c) => (
+              <CategoryChip
+                key={c.value}
+                to="/search"
+                search={{ category: c.value }}
+                icon={<c.icon className="size-4" />}
+              >
+                {c.label}
+              </CategoryChip>
+            ))}
           </div>
         </div>
       </section>
