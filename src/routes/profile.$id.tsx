@@ -493,7 +493,7 @@ function EditProfileDialog({
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               maxLength={80}
-              placeholder="Luanda, Angola"
+              placeholder="Cidade, província"
             />
           </div>
 

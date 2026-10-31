@@ -30,7 +30,7 @@ export const Route = createFileRoute("/search")({
   head: () => ({
     meta: [
       { title: "Procurar anúncios — Moyo Markit" },
-      { name: "description", content: "Procure imóveis e serviços em Luanda." },
+      { name: "description", content: "Procure imóveis, veículos, eletrónicos, serviços e muito mais em toda a Angola." },
     ],
   }),
   component: SearchPage,

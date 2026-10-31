@@ -11,11 +11,11 @@ import { ListingCard, type ListingCardData } from "@/components/ListingCard";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Moyo Markit — Compre e venda em Luanda" },
+      { title: "Moyo Markit — Compre e venda em Angola" },
       {
         name: "description",
         content:
-          "Encontre casas para arrendar, comprar e profissionais de confiança em Luanda. Anuncie grátis.",
+          "Encontre casas, carros, telemóveis, serviços e muito mais em toda a Angola. Anuncie grátis.",
       },
     ],
   }),
@@ -45,7 +45,7 @@ function Home_() {
       <section className="relative overflow-hidden bg-gradient-to-br from-primary to-[oklch(0.45_0.14_180)] text-primary-foreground">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
           <h1 className="max-w-2xl text-3xl font-bold leading-tight sm:text-5xl">
-            Compre e venda em Luanda, ao alcance de uma mensagem.
+            Compre e venda em Angola, ao alcance de uma mensagem.
           </h1>
           <p className="mt-3 max-w-xl text-sm opacity-90 sm:text-base">
             Procure, anuncie e fale diretamente com o vendedor no WhatsApp. Simples e gratuito.

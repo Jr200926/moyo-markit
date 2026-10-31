@@ -174,7 +174,7 @@ function NewListing() {
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Ex.: Apartamento T2 no Benfica"
+            placeholder="Ex.: iPhone 13 128GB, Apartamento T2, Toyota Hilux"
             maxLength={120}
             required
           />
@@ -198,7 +198,7 @@ function NewListing() {
               id="location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Ex.: Luanda, Benfica"
+              placeholder="Ex.: Benguela, Lobito"
               maxLength={120}
             />
           </div>

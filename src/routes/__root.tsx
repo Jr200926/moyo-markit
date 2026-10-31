@@ -76,13 +76,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Moyo Markit — Compre e venda em Luanda" },
+      { title: "Moyo Markit — Compre e venda em Angola" },
       {
         name: "description",
         content:
-          "Compre e venda de tudo em Luanda: imóveis, veículos, eletrónicos, serviços e muito mais. Fale diretamente com o vendedor pelo WhatsApp.",
+          "Compre e venda de tudo em toda a Angola: imóveis, veículos, eletrónicos, serviços e muito mais. Fale diretamente com o vendedor pelo WhatsApp.",
       },
-      { property: "og:title", content: "Moyo Markit — Compre e venda em Luanda" },
+      { property: "og:title", content: "Moyo Markit — Compre e venda em Angola" },
       {
         property: "og:description",
         content: "Marketplace simples para comprar e vender em Angola.",
@@ -127,7 +127,7 @@ function RootComponent() {
             <Outlet />
           </main>
           <footer className="border-t py-6 pb-24 text-center text-xs text-muted-foreground md:pb-6">
-            Moyo Markit · Luanda, Angola
+            Moyo Markit · Angola
           </footer>
           <BottomNav />
         </div>
